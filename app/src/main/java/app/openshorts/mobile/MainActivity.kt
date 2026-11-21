@@ -178,7 +178,7 @@ class MainActivity : ComponentActivity() {
             JSONObject(body)
         }
         val temp = File(cacheDir, "openshorts_upload_" + System.currentTimeMillis())
-        try {
+        return try {
             contentResolver.openInputStream(uri).use { input ->
                 val stream = requireNotNull(input) { "Could not read the selected video" }
                 temp.outputStream().use { output -> stream.copyTo(output) }
