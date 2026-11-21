@@ -30,6 +30,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -183,7 +184,7 @@ class MainActivity : ComponentActivity() {
                 temp.outputStream().use { output -> input.copyTo(output) }
             }
             progress("Uploading " + (temp.length()/1048576) + " MB…")
-            val put = headers(Request.Builder().url(reservation.getString("upload_url")).put(temp.readBytes().toRequestBody("application/octet-stream".toMediaType())),token,gemini).build()
+            val put = headers(Request.Builder().url(reservation.getString("upload_url")).put(temp.asRequestBody("application/octet-stream".toMediaType())),token,gemini).build()
             http.newCall(put).execute().use { res ->
                 val body = res.body?.string().orEmpty()
                 check(res.isSuccessful) { parseError(body,res.code) }
@@ -200,7 +201,7 @@ class MainActivity : ComponentActivity() {
     }
     private suspend fun watchJob(id: String, server: String, token: String, gemini: String, onStatus: (String)->Unit, onDetails: (String)->Unit, onDone: ()->Unit) {
         withContext(Dispatchers.IO) {
-            repeat(360) {
+            for (attempt in 0 until 360) {
                 val request = headers(Request.Builder().url(root(server) + "/api/status/" + id).get(),token,gemini).build()
                 val data = http.newCall(request).execute().use { res ->
                     val body = res.body?.string().orEmpty()
