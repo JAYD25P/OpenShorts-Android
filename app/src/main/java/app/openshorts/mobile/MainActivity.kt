@@ -180,8 +180,8 @@ class MainActivity : ComponentActivity() {
         val temp = File(cacheDir, "openshorts_upload_" + System.currentTimeMillis())
         try {
             contentResolver.openInputStream(uri).use { input ->
-                requireNotNull(input) { "Could not read the selected video" }
-                temp.outputStream().use { output -> input.copyTo(output) }
+                val stream = requireNotNull(input) { "Could not read the selected video" }
+                temp.outputStream().use { output -> stream.copyTo(output) }
             }
             progress("Uploading " + (temp.length()/1048576) + " MB…")
             val put = headers(Request.Builder().url(reservation.getString("upload_url")).put(temp.asRequestBody("application/octet-stream".toMediaType())),token,gemini).build()
